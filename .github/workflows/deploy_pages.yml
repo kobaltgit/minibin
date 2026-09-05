@@ -1,0 +1,44 @@
+name: Deploy Website to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'website/**'
+      - '.github/workflows/deploy_pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          cd website
+          flutter pub get
+
+      - name: Build Web
+        run: |
+          cd website
+          flutter build web --release --base-href "/minibin/"
+          touch build/web/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: website/build/web
+          branch: gh-pages

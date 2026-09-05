@@ -8,7 +8,7 @@
   [![Rust](https://img.shields.io/badge/Rust-2021%20Edition-DEA584.svg?logo=rust)](https://www.rust-lang.org)
   [![Tauri](https://img.shields.io/badge/Tauri-v2.0-FFC131.svg?logo=tauri)](https://v2.tauri.app)
   [![Svelte](https://img.shields.io/badge/Svelte-v5%20(Runes)-FF3E00.svg?logo=svelte)](https://svelte.dev)
-  [![Flutter](https://img.shields.io/badge/Website-Flutter%20Web-02569B.svg?logo=flutter)](https://flutter.dev)
+  [![Website](https://img.shields.io/badge/Website-Flutter%20Web-02569B.svg?logo=flutter)](https://kobaltgit.github.io/minibin/)
 </div>
 
 ---

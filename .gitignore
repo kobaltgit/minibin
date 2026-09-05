@@ -1,4 +1,3 @@
-*.png
 /build/
 /output/
 *.pyc
@@ -14,3 +13,18 @@ __pycache__/
 test.py
 *.spec
 settings.json
+
+# Node & Frontend
+node_modules/
+.svelte-kit/
+dist/
+
+# Rust & Tauri
+src-tauri/target/
+
+# Flutter Website
+website/.dart_tool/
+website/build/
+website/.idea/
+*.iml
+.idea/

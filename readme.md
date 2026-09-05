@@ -1,15 +1,13 @@
 # MiniBin v2 — Корзина Windows в системном трее
 
-<div align="center">
-  <h3>🗑️ Легковесная, нативная и стильная утилита для управления Корзиной в Windows 10 & 11</h3>
+### 🗑️ Легковесная, нативная и стильная утилита для управления Корзиной в Windows 10 & 11
 
-  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-  [![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6.svg?logo=windows)](https://microsoft.com)
-  [![Rust](https://img.shields.io/badge/Rust-2021%20Edition-DEA584.svg?logo=rust)](https://www.rust-lang.org)
-  [![Tauri](https://img.shields.io/badge/Tauri-v2.0-FFC131.svg?logo=tauri)](https://v2.tauri.app)
-  [![Svelte](https://img.shields.io/badge/Svelte-v5%20(Runes)-FF3E00.svg?logo=svelte)](https://svelte.dev)
-  [![Website](https://img.shields.io/badge/Website-Flutter%20Web-02569B.svg?logo=flutter)](https://kobaltgit.github.io/minibin/)
-</div>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6.svg?logo=windows)](https://microsoft.com)
+[![Rust](https://img.shields.io/badge/Rust-2021%20Edition-DEA584.svg?logo=rust)](https://www.rust-lang.org)
+[![Tauri](https://img.shields.io/badge/Tauri-v2.0-FFC131.svg?logo=tauri)](https://v2.tauri.app)
+[![Svelte](https://img.shields.io/badge/Svelte-v5%20(Runes)-FF3E00.svg?logo=svelte)](https://svelte.dev)
+[![Website](https://img.shields.io/badge/Website-Flutter%20Web-02569B.svg?logo=flutter)](https://kobaltgit.github.io/minibin/)
 
 ---
 
@@ -58,40 +56,48 @@
 ## 🚀 Сборка и запуск для разработчиков
 
 ### Требования
-- **Node.js** v18+ и **npm**
-- **Rust toolchain** (компилятор `rustc`, `cargo`): `https://rustup.rs/`
-- **C++ Build Tools** (Visual Studio Installer / MSVC)
-- *(Опционально для лендинга)*: **Flutter SDK** 3.20+
+
+* **Node.js** v18+ и **npm**
+* **Rust toolchain** (компилятор `rustc`, `cargo`): `https://rustup.rs/`
+* **C++ Build Tools** (Visual Studio Installer / MSVC)
+* *(Опционально для лендинга)*: **Flutter SDK** 3.20+
 
 ### Инструкция
 
 1. **Клонируйте репозиторий и перейдите в папку проекта:**
+
    ```bash
    git clone https://github.com/kobaltgit/minibin.git
    cd minibin
    ```
 
 2. **Установите зависимости фронтенда:**
+
    ```bash
    npm install
    ```
 
 3. **Запуск в режиме разработки:**
+
    ```bash
    npm run tauri dev
    ```
 
 4. **Сборка релизного дистрибутива (.exe и установщик):**
+
    ```bash
    npm run tauri build
    ```
+
    Готовый бинарник будет доступен в `src-tauri/target/release/minibin.exe` или `src-tauri/target/release/bundle/nsis/`.
 
 5. **Сборка промо-сайта на Flutter Web:**
+
    ```bash
    cd website
    flutter build web --release
    ```
+
    Файлы лендинга генерируются в `website/build/web/`.
 
 ---
@@ -100,4 +106,4 @@
 
 Этот проект распространяется по лицензии [MIT](LICENSE).
 
-*Оригинальная идея утилиты: [King Triton](https://github.com/king-tri-ton). В версии v2 проект полностью переписан на Rust, Tauri и Svelte.*
+*Оригинальная идея утилиты: [King Triton](https://github.com/king-tri-ton). В версии v2 проект полностью переписан на Rust, Tauri и Svelte.*

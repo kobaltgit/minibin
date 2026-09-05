@@ -2,8 +2,38 @@
   import { onMount } from 'svelte';
   import { invoke } from '@tauri-apps/api/core';
   import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-  import type { RecycleBinStats, RecycleBinItem, AppSettings } from '$lib/types';
-  import { translations } from '$lib/i18n';
+  import { openUrl } from '@tauri-apps/plugin-opener';
+  import type { RecycleBinStats, RecycleBinItem } from '../lib/types';
+  import { translations } from '../lib/i18n';
+
+  interface AppSettings {
+    language: 'ru' | 'en';
+    theme: 'dark' | 'light' | 'system';
+    icon_theme: 'fluent' | 'retro' | 'minimal' | 'original' | 'custom';
+    click_action_lmb: string;
+    click_action_mmb: string;
+    click_action_double: string;
+    confirm_empty: boolean;
+    play_sound: boolean;
+    autorun: boolean;
+    alert_threshold_gb: number;
+    custom_empty_icon?: string | null;
+    custom_full_icon?: string | null;
+    auto_check_updates: boolean;
+    last_update_check_time: number;
+    last_notified_version: string;
+  }
+
+  interface UpdateCheckResult {
+    has_update: boolean;
+    current_version: string;
+    latest_version: string;
+    release_url: string;
+    setup_url?: string | null;
+    portable_url?: string | null;
+    release_notes: string;
+    published_at: string;
+  }
 
   let stats = $state<RecycleBinStats>({
     total_size_bytes: 0,
@@ -25,7 +55,10 @@
     autorun: true,
     alert_threshold_gb: 10,
     custom_empty_icon: null,
-    custom_full_icon: null
+    custom_full_icon: null,
+    auto_check_updates: true,
+    last_update_check_time: 0,
+    last_notified_version: ''
   });
 
   let activeTab = $state<'overview' | 'settings'>('overview');
@@ -34,7 +67,12 @@
   let isActionPending = $state(false);
   let showConfirmEmpty = $state(false);
 
-  let t = $derived(translations[settings.language] || translations.ru);
+  let updateResult = $state<UpdateCheckResult | null>(null);
+  let isCheckingUpdates = $state(false);
+  let updateError = $state<string | null>(null);
+  let isAboutHighlighted = $state(false);
+
+  let t = $derived<Record<string, string>>(translations[settings.language] || translations.ru);
 
   let filteredItems = $derived(
     items.filter(item =>
@@ -200,18 +238,67 @@
     }
   }
 
+  async function handleCheckUpdates(force: boolean = true) {
+    try {
+      isCheckingUpdates = true;
+      updateError = null;
+      const res = await invoke<UpdateCheckResult>('check_for_updates', { force });
+      updateResult = res;
+    } catch (err: any) {
+      console.error('Check updates failed:', err);
+      updateError = String(err);
+    } finally {
+      isCheckingUpdates = false;
+    }
+  }
+
+  function scrollToAbout() {
+    activeTab = 'settings';
+    showConfirmEmpty = false;
+    setTimeout(() => {
+      const el = document.getElementById('about-card');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        isAboutHighlighted = true;
+        setTimeout(() => { isAboutHighlighted = false; }, 2200);
+      }
+    }, 70);
+  }
+
+  function handleOpenUrl(url: string | null | undefined) {
+    if (url) {
+      openUrl(url).catch(err => console.error('Failed to open url:', err));
+    }
+  }
+
   onMount(() => {
     loadData();
 
-    let unlisten: UnlistenFn | undefined;
+    // Check updates silently with cooldown on flyout open
+    handleCheckUpdates(false);
+
+    let unlistenSwitch: UnlistenFn | undefined;
+    let unlistenUpdate: UnlistenFn | undefined;
+
     listen<string>('switch-tab', async (event) => {
       if (event.payload === 'settings' || event.payload === 'overview') {
         activeTab = event.payload;
         showConfirmEmpty = false;
         await loadData();
+      } else if (event.payload === 'about') {
+        await loadData();
+        scrollToAbout();
       }
     }).then((u) => {
-      unlisten = u;
+      unlistenSwitch = u;
+    });
+
+    listen<UpdateCheckResult>('update-status', (event) => {
+      if (event.payload) {
+        updateResult = event.payload;
+      }
+    }).then((u) => {
+      unlistenUpdate = u;
     });
 
     // Polling interval when flyout is open
@@ -226,7 +313,8 @@
 
     return () => {
       clearInterval(interval);
-      if (unlisten) unlisten();
+      if (unlistenSwitch) unlistenSwitch();
+      if (unlistenUpdate) unlistenUpdate();
     };
   });
 </script>
@@ -254,6 +342,17 @@
     </div>
 
     <div class="header-actions">
+      {#if updateResult?.has_update}
+        <button
+          class="update-badge-btn"
+          onclick={scrollToAbout}
+          title="{t.update_available} ({updateResult.latest_version})"
+        >
+          <span class="badge-dot"></span>
+          <span class="badge-text">{updateResult.latest_version}</span>
+        </button>
+      {/if}
+
       <!-- Tab Switcher -->
       <button
         class="icon-btn {activeTab === 'settings' ? 'active' : ''}"
@@ -652,6 +751,181 @@
             <button class="btn btn-secondary btn-sm" onclick={handleOpenDesktopSettings}>
               {t.open_desk_cpl}
             </button>
+          </div>
+        </div>
+
+        <!-- About MiniBin Card -->
+        <div class="about-card {isAboutHighlighted ? 'highlight' : ''}" id="about-card">
+          <div class="about-header">
+            <div class="about-logo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </div>
+            <div class="about-title-block">
+              <div class="about-name-row">
+                <span class="about-name">MiniBin</span>
+                <span class="version-badge">v2.0.1</span>
+              </div>
+              <span class="about-tagline">{t.about_desc}</span>
+            </div>
+          </div>
+
+          <!-- Updater Interactive Section -->
+          <div class="updater-block">
+            <div class="updater-status-row">
+              <div class="updater-status-info">
+                {#if isCheckingUpdates}
+                  <div class="status-indicator checking">
+                    <svg class="spinning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <line x1="12" y1="2" x2="12" y2="6"></line>
+                      <line x1="12" y1="18" x2="12" y2="22"></line>
+                      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+                      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+                      <line x1="2" y1="12" x2="6" y2="12"></line>
+                      <line x1="18" y1="12" x2="22" y2="12"></line>
+                      <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+                      <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                    </svg>
+                    <span>{t.checking_updates}</span>
+                  </div>
+                {:else if updateResult?.has_update}
+                  <div class="status-indicator available">
+                    <span class="pulse-dot"></span>
+                    <span>{t.update_available} <strong>{updateResult.latest_version}</strong></span>
+                  </div>
+                {:else if updateResult && !updateResult.has_update}
+                  <div class="status-indicator latest">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>{t.update_latest}</span>
+                  </div>
+                {:else if updateError}
+                  <div class="status-indicator error">
+                    <span>{t.update_check_failed}</span>
+                  </div>
+                {:else}
+                  <div class="status-indicator idle">
+                    <span>{t.version_label}</span>
+                  </div>
+                {/if}
+              </div>
+
+              <button
+                class="btn btn-secondary btn-sm"
+                onclick={() => handleCheckUpdates(true)}
+                disabled={isCheckingUpdates}
+              >
+                {t.check_updates}
+              </button>
+            </div>
+
+            <!-- Download buttons if update available -->
+            {#if updateResult?.has_update}
+              <div class="update-downloads-card">
+                <div class="downloads-actions">
+                  {#if updateResult.setup_url}
+                    <button
+                      class="btn btn-primary btn-sm download-btn"
+                      onclick={() => handleOpenUrl(updateResult!.setup_url)}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      {t.download_installer}
+                    </button>
+                  {/if}
+                  {#if updateResult.portable_url}
+                    <button
+                      class="btn btn-secondary btn-sm download-btn"
+                      onclick={() => handleOpenUrl(updateResult!.portable_url)}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                        <rect x="1" y="3" width="22" height="5"></rect>
+                        <line x1="10" y1="12" x2="14" y2="12"></line>
+                      </svg>
+                      {t.download_portable}
+                    </button>
+                  {/if}
+                  {#if updateResult.release_url}
+                    <button
+                      class="btn btn-text btn-sm notes-link"
+                      onclick={() => handleOpenUrl(updateResult!.release_url)}
+                    >
+                      {t.view_release_notes} →
+                    </button>
+                  {/if}
+                </div>
+              </div>
+            {/if}
+
+            <!-- Auto-check Toggle -->
+            <div class="updater-auto-toggle">
+              <div class="toggle-text">
+                <span class="toggle-title-sm">{t.auto_check_updates}</span>
+                <span class="toggle-sub-sm">{t.auto_check_updates_desc}</span>
+              </div>
+              <label class="switch switch-sm">
+                <input
+                  type="checkbox"
+                  checked={settings.auto_check_updates}
+                  onchange={(e) => updateSetting('auto_check_updates', (e.target as HTMLInputElement).checked)}
+                />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Official Links Grid -->
+          <div class="about-links-grid">
+            <button class="about-link-item" onclick={() => handleOpenUrl('https://kobaltgit.github.io/minibin/')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>{t.website}</span>
+            </button>
+
+            <button class="about-link-item" onclick={() => handleOpenUrl('https://github.com/kobaltgit/minibin')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+              </svg>
+              <span>{t.github_repo}</span>
+            </button>
+
+            <button class="about-link-item" onclick={() => handleOpenUrl('https://github.com/kobaltgit/minibin/issues')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <span>{t.report_issue}</span>
+            </button>
+
+            <button class="about-link-item" onclick={() => handleOpenUrl('https://github.com/kobaltgit/minibin/blob/master/LICENSE')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>{t.mit_license}</span>
+            </button>
+          </div>
+
+          <!-- Authorship / Credits -->
+          <div class="about-credits">
+            <span>{t.credits_dev}</span>
+            <span class="bullet">•</span>
+            <span>{t.credits_idea}</span>
           </div>
         </div>
 
@@ -1394,5 +1668,351 @@
     font-size: 10px;
     color: var(--text-muted);
     padding: 12px 0 6px 0;
+  }
+
+  /* Header Update Badge */
+  .update-badge-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .update-badge-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: rgba(16, 185, 129, 0.55);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+    animation: pulse-dot 2s infinite ease-in-out;
+  }
+
+  /* About Card */
+  .about-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 14px;
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    transition: all 0.35s ease;
+  }
+
+  :global([data-theme="light"]) .about-card {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .about-card.highlight {
+    animation: pulse-highlight 2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes pulse-highlight {
+    0% {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.5);
+    }
+    50% {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 16px 4px rgba(56, 189, 248, 0.35);
+    }
+    100% {
+      border-color: var(--border-subtle);
+      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+    }
+  }
+
+  .about-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .about-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0ea5e9, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    flex-shrink: 0;
+  }
+
+  .about-logo svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .about-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .about-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .about-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+  }
+
+  .version-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(99, 102, 241, 0.2));
+    border: 1px solid rgba(14, 165, 233, 0.4);
+    color: var(--accent-blue);
+  }
+
+  .about-tagline {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.3;
+  }
+
+  /* Updater Block */
+  .updater-block {
+    background: rgba(0, 0, 0, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 9px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  :global([data-theme="light"]) .updater-block {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .updater-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .updater-status-info {
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-indicator.idle {
+    color: var(--text-muted);
+  }
+
+  .status-indicator.checking {
+    color: var(--accent-blue);
+  }
+
+  .status-indicator.checking svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .status-indicator.available {
+    color: #10b981;
+  }
+
+  .status-indicator.latest {
+    color: #10b981;
+  }
+
+  .status-indicator.latest svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .status-indicator.error {
+    color: #ef4444;
+  }
+
+  .pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+    animation: pulse-dot 1.5s infinite ease-in-out;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { transform: scale(0.9); opacity: 0.7; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+
+  /* Downloads Card */
+  .update-downloads-card {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-radius: 8px;
+    padding: 10px;
+  }
+
+  .downloads-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .download-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .notes-link {
+    font-size: 11px;
+    color: var(--accent-blue);
+    padding: 4px 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .notes-link:hover {
+    color: #38bdf8;
+  }
+
+  /* Auto-check Toggle */
+  .updater-auto-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 6px;
+    border-top: 1px solid var(--border-subtle);
+    gap: 8px;
+  }
+
+  .toggle-title-sm {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .toggle-sub-sm {
+    font-size: 9.5px;
+    color: var(--text-muted);
+    display: block;
+    line-height: 1.2;
+    margin-top: 1px;
+  }
+
+  .switch-sm {
+    width: 32px;
+    height: 18px;
+  }
+
+  .switch-sm .slider:before {
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+  }
+
+  .switch-sm input:checked + .slider:before {
+    transform: translateX(14px);
+  }
+
+  /* About Links Grid */
+  .about-links-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .about-link-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: 7px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+  }
+
+  :global([data-theme="light"]) .about-link-item {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .about-link-item:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: rgba(56, 189, 248, 0.3);
+    color: var(--accent-blue);
+    transform: translateY(-1px);
+  }
+
+  .about-link-item svg {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    stroke-width: 2;
+  }
+
+  /* About Credits */
+  .about-credits {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--text-muted);
+    padding-top: 4px;
+    border-top: 1px dashed var(--border-subtle);
+    text-align: center;
+  }
+
+  .about-credits .bullet {
+    opacity: 0.5;
   }
 </style>

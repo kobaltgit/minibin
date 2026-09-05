@@ -2,6 +2,10 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
+fn default_true() -> bool {
+    true
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
     pub language: String,            // "ru" | "en"
@@ -16,6 +20,12 @@ pub struct AppSettings {
     pub alert_threshold_gb: u32,     // 0 = disabled, e.g. 5, 10, 20
     pub custom_empty_icon: Option<String>,
     pub custom_full_icon: Option<String>,
+    #[serde(default = "default_true")]
+    pub auto_check_updates: bool,
+    #[serde(default)]
+    pub last_update_check_time: u64,
+    #[serde(default)]
+    pub last_notified_version: String,
 }
 
 impl Default for AppSettings {
@@ -33,6 +43,9 @@ impl Default for AppSettings {
             alert_threshold_gb: 10,
             custom_empty_icon: None,
             custom_full_icon: None,
+            auto_check_updates: true,
+            last_update_check_time: 0,
+            last_notified_version: String::new(),
         }
     }
 }

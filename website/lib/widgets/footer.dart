@@ -97,7 +97,7 @@ class Footer extends StatelessWidget {
                       const SizedBox(height: 10),
                       _buildFooterLink('GitHub Repository', AppConstants.repoUrl),
                       const SizedBox(height: 6),
-                      _buildFooterLink('Releases (v2.0.0)', AppConstants.releaseUrl),
+                      _buildFooterLink('Releases (${AppConstants.releaseTag})', AppConstants.releaseUrl),
                       const SizedBox(height: 6),
                       _buildFooterLink('Report Issue', AppConstants.issuesUrl),
                       const SizedBox(height: 6),

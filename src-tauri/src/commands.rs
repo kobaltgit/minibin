@@ -148,3 +148,13 @@ pub fn reset_custom_icons(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+pub async fn check_for_updates(app: AppHandle, force: bool) -> Result<crate::updater::UpdateCheckResult, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        crate::updater::check_updates_with_cooldown(&app, force)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+

@@ -35,11 +35,12 @@ jobs:
       - name: Package Release Assets
         shell: pwsh
         run: |
+          $ver = if ($env:GITHUB_REF_NAME -match '^v?(.+)$') { $Matches[1] } else { '2.0.1' }
           New-Item -ItemType Directory -Force -Path release_assets
-          Copy-Item src-tauri/target/release/bundle/nsis/*.exe release_assets/MiniBin_2.0.0_Setup.exe
+          Copy-Item src-tauri/target/release/bundle/nsis/*.exe "release_assets/MiniBin_${ver}_Setup.exe"
           Copy-Item src-tauri/target/release/minibin.exe release_assets/MiniBin.exe
           Set-Content -Path release_assets/portable.txt -Value "Этот файл переводит MiniBin в портабельный режим. Настройки и кастомные иконки сохраняются в этой же папке."
-          Compress-Archive -Path release_assets/MiniBin.exe, release_assets/portable.txt -DestinationPath release_assets/MiniBin_2.0.0_Portable.zip
+          Compress-Archive -Path release_assets/MiniBin.exe, release_assets/portable.txt -DestinationPath "release_assets/MiniBin_${ver}_Portable.zip"
 
       - name: Upload Artifacts to Workflow Run
         uses: actions/upload-artifact@v4
@@ -50,11 +51,12 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v2.0.0' }}
-          name: MiniBin v2.0.0
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v2.0.1' }}
+          name: MiniBin ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v2.0.1' }}
+          body_path: RELEASE_NOTES.md
           files: |
-            release_assets/MiniBin_2.0.0_Setup.exe
-            release_assets/MiniBin_2.0.0_Portable.zip
+            release_assets/MiniBin_*_Setup.exe
+            release_assets/MiniBin_*_Portable.zip
             release_assets/MiniBin.exe
           draft: false
           prerelease: false

@@ -21,8 +21,8 @@ class S {
 
   // Hero Section
   static String get heroBadge => isRu
-      ? 'MiniBin v2.0.0 Релиз доступен — Нативный Rust, Tauri v2 & Svelte 5'
-      : 'MiniBin v2.0.0 Release Available — Native Rust, Tauri v2 & Svelte 5';
+      ? 'MiniBin v2.0.1 Релиз доступен — Нативный Rust, Tauri v2 & Svelte 5'
+      : 'MiniBin v2.0.1 Release Available — Native Rust, Tauri v2 & Svelte 5';
   static String get heroTitlePrefix => isRu ? 'Корзина Windows прямо в ' : 'Windows Recycle Bin in ';
   static String get heroTitleGradient => isRu ? 'системном трее' : 'Your System Tray';
   static String get heroSubtitle => isRu
@@ -134,8 +134,8 @@ class S {
 
   static String get faqQ2 => isRu ? 'Как работает портабельная версия?' : 'How does the portable version work?';
   static String get faqA2 => isRu
-      ? 'Скачайте MiniBin_2.0.0_Portable.zip, распакуйте в любую папку или на флешку. Наличие файла portable.txt указывает программе хранить все настройки и кастомные иконки в этой же папке.'
-      : 'Download MiniBin_2.0.0_Portable.zip, unpack anywhere or onto a flash drive. The presence of portable.txt tells MiniBin to keep all settings and icons locally in that folder.';
+      ? 'Скачайте MiniBin_2.0.1_Portable.zip, распакуйте в любую папку или на флешку. Наличие файла portable.txt указывает программе хранить все настройки и кастомные иконки в этой же папке.'
+      : 'Download MiniBin_2.0.1_Portable.zip, unpack anywhere or onto a flash drive. The presence of portable.txt tells MiniBin to keep all settings and icons locally in that folder.';
 
   static String get faqQ3 => isRu ? 'Как скрыть значок корзины с Рабочего стола?' : 'How do I hide the Recycle Bin from my desktop?';
   static String get faqA3 => isRu

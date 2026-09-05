@@ -4,6 +4,7 @@ pub mod recycle_bin;
 pub mod settings;
 pub mod single_instance;
 pub mod tray;
+pub mod updater;
 
 use std::time::Duration;
 use tauri::WindowEvent;
@@ -39,6 +40,9 @@ pub fn run() {
             // Initial icon update
             tray::update_tray_icon(&app.handle());
 
+            // Start background update checker (startup + weekly)
+            updater::start_background_updater(app.handle().clone());
+
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -60,6 +64,7 @@ pub fn run() {
             commands::close_flyout,
             commands::select_custom_icon,
             commands::reset_custom_icons,
+            commands::check_for_updates,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -193,6 +193,14 @@ pub fn create_tray(app: &AppHandle) -> Result<TrayIcon, tauri::Error> {
         None::<&str>,
     )?;
 
+    let about_item = MenuItem::with_id(
+        app,
+        "about",
+        if is_en { "About MiniBin..." } else { "О программе..." },
+        true,
+        None::<&str>,
+    )?;
+
     let exit_item = MenuItem::with_id(
         app,
         "exit",
@@ -216,6 +224,7 @@ pub fn create_tray(app: &AppHandle) -> Result<TrayIcon, tauri::Error> {
             &sep2,
             &desktop_settings_item,
             &settings_item,
+            &about_item,
             &sep3,
             &exit_item,
         ],
@@ -247,6 +256,14 @@ pub fn create_tray(app: &AppHandle) -> Result<TrayIcon, tauri::Error> {
             "settings" => {
                 if let Some(window) = app.get_webview_window("main") {
                     let _ = window.emit("switch-tab", "settings");
+                    position_flyout(&window);
+                    let _ = window.show();
+                    let _ = window.set_focus();
+                }
+            }
+            "about" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.emit("switch-tab", "about");
                     position_flyout(&window);
                     let _ = window.show();
                     let _ = window.set_focus();

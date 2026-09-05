@@ -27,4 +27,18 @@ export interface AppSettings {
   alert_threshold_gb: number;
   custom_empty_icon?: string | null;
   custom_full_icon?: string | null;
+  auto_check_updates: boolean;
+  last_update_check_time: number;
+  last_notified_version: string;
+}
+
+export interface UpdateCheckResult {
+  has_update: boolean;
+  current_version: string;
+  latest_version: string;
+  release_url: string;
+  setup_url?: string | null;
+  portable_url?: string | null;
+  release_notes: string;
+  published_at: string;
 }

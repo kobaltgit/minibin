@@ -1,0 +1,35 @@
+{
+    "name": "MiniBin v2 — Корзина Windows в системном трее",
+    "short_name": "MiniBin",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#07090E",
+    "theme_color": "#38BDF8",
+    "description": "MiniBin v2 — легковесная, нативная и стильная утилита для управления Корзиной Windows 10 & 11 в системном трее.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

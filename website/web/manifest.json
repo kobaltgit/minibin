@@ -1,11 +1,11 @@
 {
-    "name": "website",
-    "short_name": "website",
+    "name": "MiniBin v2 — Корзина Windows в системном трее",
+    "short_name": "MiniBin",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#07090E",
+    "theme_color": "#38BDF8",
+    "description": "MiniBin v2 — легковесная, нативная и стильная утилита для управления Корзиной Windows 10 & 11 в системном трее.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

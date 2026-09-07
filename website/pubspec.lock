@@ -80,6 +80,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  kobalt_ui:
+    dependency: "direct main"
+    description:
+      path: "../../kobalt_ui"
+      relative: true
+    source: path
+    version: "0.1.0"
   leak_tracker:
     dependency: transitive
     description:

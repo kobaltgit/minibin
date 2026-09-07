@@ -1,109 +1,135 @@
-# MiniBin v2 — Корзина Windows в системном трее
+<p align="center">
+  <img src="src-tauri/icons/128x128.png" width="96" height="96" alt="MiniBin Logo" />
+  <h1 align="center">MiniBin v2</h1>
+  <strong>Легковесная корзина в системном трее Windows 10 & 11 на Rust и Tauri v2.</strong><br/>
+  <em>Lightweight system tray Recycle Bin companion for Windows 10 & 11 built with Rust & Tauri v2.</em>
+</p>
 
-### 🗑️ Легковесная, нативная и стильная утилита для управления Корзиной в Windows 10 & 11
+<p align="center">
+  <a href="https://github.com/kobaltgit/minibin/releases/latest"><img src="https://img.shields.io/github/v/release/kobaltgit/minibin?color=38bdf8&label=Latest%20Release" alt="Latest Release" /></a>
+  <a href="https://kobaltgit.github.io/minibin/"><img src="https://img.shields.io/badge/Website-Flutter%20Web-02569B.svg?logo=flutter" alt="Live Website" /></a>
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6.svg?logo=windows" alt="Windows 10/11" />
+  <img src="https://img.shields.io/badge/Rust-2021%20Edition-DEA584.svg?logo=rust" alt="Rust 2021" />
+  <img src="https://img.shields.io/badge/Tauri-v2.0-FFC131.svg?logo=tauri" alt="Tauri v2" />
+  <img src="https://img.shields.io/badge/Frontend-Svelte%205%20(Runes)-FF3E00.svg?logo=svelte" alt="Svelte 5" />
+  <img src="https://img.shields.io/badge/RAM-%3C%2020%20MB-34d399.svg" alt="Low RAM" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License" /></a>
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform: Windows](https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D6.svg?logo=windows)](https://microsoft.com)
-[![Rust](https://img.shields.io/badge/Rust-2021%20Edition-DEA584.svg?logo=rust)](https://www.rust-lang.org)
-[![Tauri](https://img.shields.io/badge/Tauri-v2.0-FFC131.svg?logo=tauri)](https://v2.tauri.app)
-[![Svelte](https://img.shields.io/badge/Svelte-v5%20(Runes)-FF3E00.svg?logo=svelte)](https://svelte.dev)
-[![Website](https://img.shields.io/badge/Website-Flutter%20Web-02569B.svg?logo=flutter)](https://kobaltgit.github.io/minibin/)
-
----
-
-## ⚡ О проекте
-
-**MiniBin v2** — это глубокий архитектурный рефакторинг оригинальной утилиты MiniBin. Приложение переведено с Python/PyQt6 на **нативный машинный код Rust и Tauri v2** с современным всплывающим окном **Flyout на Svelte 5**.
-
-Освободите рабочий стол от стандартного значка корзины, контролируйте удалённые файлы и восстанавливайте их в один клик прямо из системного трея.
-
-### Сравнение поколений
-
-| Показатель | MiniBin v1 (Python / PyQt6) | MiniBin v2 (Tauri v2 + Rust) |
-| :--- | :--- | :--- |
-| **ОЗУ в фоне** | 60–90 МБ | **10–18 МБ** (сверхлегковесный процесс) |
-| **Размер установщика** | ~60 МБ | **~10 МБ** |
-| **Интерфейс** | Только контекстное меню трея | **Интерактивный Flyout у трея (Fluent Acrylic)** |
-| **Управление файлами** | Очистка "вслепую" | **Превью удаленных файлов, поиск, точечное восстановление** |
-| **Темы значков** | 2 фиксированные иконки | **4 набора (Fluent, Win98 Retro, Minimal, Classic) + динамика** |
-| **Автозапуск** | Запись в `ProgramData` (требует Admin / UAC) | **Запись в `HKCU\...\Run` (без прав администратора)** |
-| **Языки** | Русский | **Русский (RU) и Английский (EN)** |
+<p align="center">
+  <a href="#-о-проекте">🇷🇺 Русский</a> • <a href="#-about-the-project">🇬🇧 English</a> • <a href="#-экосистема-kobalt-tools">🌐 Экосистема</a>
+</p>
 
 ---
 
-## ✨ Ключевые возможности
+## 🇷🇺 О проекте
 
-* 🪟 **Fluent Glassmorphism Flyout**: Красивое всплывающее окно около трея с акриловым размытием (`backdrop-filter`), адаптирующееся под системную светлую и тёмную тему Windows.
-* 📊 **Живой мониторинг объема**: Динамическая шкала заполнения с предупреждающей подсветкой при превышении настраиваемого лимита (5, 10, 20, 50 ГБ).
-* 🔍 **Обозреватель удалённых объектов**: Полноценный список файлов в корзине с мгновенным поиском по имени или пути.
-* ↩️ **Точечные действия над файлами**: Восстановление любого файла на его исходное место или безвозвратное удаление прямо из списка.
-* 🖱️ **Настраиваемые действия мыши**: Гибкая привязка ЛКМ, СКМ (колёсико) и двойного клика (вызов Flyout, моментальная очистка, открытие в Проводнике).
-* 🎨 **Наборы иконок трея**: Переключение между современным стилем Fluent, ретро-значками Windows 98, минимализмом и классическим видом.
-* 🚀 **Безопасная автозагрузка**: Автостарт через реестр текущего пользователя (`HKCU`) без навязчивых запросов UAC.
-* 🔊 **Звук и подтверждения**: Опциональный звук сминания бумаги и защита от случайной очистки.
-* 🖥️ **Скрытие корзины с Рабочего стола**: Быстрый вызов системного апплета `desk.cpl,,0` для скрытия десктопного значка.
+**MiniBin v2** — сверхлегковесная нативная утилита для Windows 10 & 11, входящая в экосистему системных инструментов **Kobalt Tools** ([StashIt](https://github.com/kobaltgit/StashIt), [Undoit](https://github.com/kobaltgit/undoit), [PolyShift](https://github.com/kobaltgit/polyshift), [PeekIt](https://github.com/kobaltgit/peekit)).
 
----
+Приложение переносит управление Корзиной в область уведомлений (системный трей). Это позволяет полностью скрыть иконку корзины с рабочего стола, мгновенно просматривать удаленные файлы во всплывающем окне Flyout, точечно восстанавливать нужные объекты и очищать корзину в один клик.
 
-## 🛠️ Стек технологий
+Версия **v2.0** полностью переписана на **Rust 2021** и **Svelte 5** под движком **Tauri v2**, потребляет **всего 10–18 МБ RAM** (в 5 раз меньше Python-версии) и работает без прав администратора.
 
-* **Backend**: Rust 2021, Tauri v2, Windows API (`SHQueryRecycleBinW`, `SHEmptyRecycleBinW`, `IShellFolder`), `winreg`.
-* **Frontend**: Svelte 5 (Runes `$state`, `$derived`, `$effect`), TypeScript, Vite, Vanilla CSS.
-* **Landing Page**: Flutter 3.44 Web (`website/`), адаптивный промо-лендинг для публикации на GitHub Pages.
+### ⚡ Сравнение с аналогами
 
----
+| Показатель | MiniBin v2 (Rust + Tauri v2) | MiniBin v1 (Python / PyQt) | Стандартная Корзина Windows |
+| :--- | :--- | :--- | :--- |
+| **ОЗУ в фоне** | **10–18 МБ** | 60–90 МБ | Часть explorer.exe |
+| **Интерфейс** | **Интерактивный Flyout (Fluent Acrylic)** | Контекстное меню | Отдельное тяжелое окно Проводника |
+| **Управление файлами** | **Превью, поиск, точечное восстановление** | Очистка "вслепую" | Только открытие окна |
+| **Темы значков** | **4 набора (Fluent, Win98 Retro, Minimal, Classic)** | 2 фиксированные | 1 статичный значок |
+| **Автозапуск** | **Чистый HKCU (без UAC)** | ProgramData (требует Admin) | Системный |
+| **Размер дистрибутива** | **~10 МБ** | ~60 МБ | Встроена в ОС |
 
-## 🚀 Сборка и запуск для разработчиков
+### 🎯 Ключевые возможности
 
-### Требования
+- 🪟 **Fluent Glassmorphism Flyout:** Красивое всплывающее окно у трея с акриловым размытием (`backdrop-filter`) и поддержкой светлой/тёмной темы.
+- 📊 **Живой мониторинг объема:** Индикатор заполнения с предупреждающей подсветкой при превышении порога (5, 10, 20, 50 ГБ).
+- 🔍 **Обозреватель удалённых объектов:** Список файлов в корзине с поиском по имени, размеру и исходному пути.
+- ↩️ **Точечное восстановление:** Восстановление любого файла в исходную папку или безвозвратное удаление прямо из Flyout.
+- 🖱️ **Настраиваемые действия мыши:** Назначение ЛКМ, СКМ и двойного клика на открытие Flyout, быструю очистку или открытие системной корзины.
+- 🎨 **4 набора иконок трея:** Современный Fluent, ретро Windows 98, минималистичные контуры и классический стиль.
+- 🚀 **Безопасная автозагрузка:** Запуск через ветку реестра `HKCU` без навязчивых запросов UAC.
+- 🔊 **Звук и подтверждения:** Опциональный звук сминания бумаги и диалог защиты от случайного удаления.
+- 🖥️ **Скрытие корзины с Рабочего стола:** Быстрый переход к апплету Windows для скрытия системного значка.
 
-* **Node.js** v18+ и **npm**
-* **Rust toolchain** (компилятор `rustc`, `cargo`): `https://rustup.rs/`
-* **C++ Build Tools** (Visual Studio Installer / MSVC)
-* *(Опционально для лендинга)*: **Flutter SDK** 3.20+
+### 📥 Установка и загрузка
 
-### Инструкция
+Скачайте актуальную версию со [страницы последнего релиза](https://github.com/kobaltgit/minibin/releases/latest):
 
-1. **Клонируйте репозиторий и перейдите в папку проекта:**
-
-   ```bash
-   git clone https://github.com/kobaltgit/minibin.git
-   cd minibin
-   ```
-
-2. **Установите зависимости фронтенда:**
-
-   ```bash
-   npm install
-   ```
-
-3. **Запуск в режиме разработки:**
-
-   ```bash
-   npm run tauri dev
-   ```
-
-4. **Сборка релизного дистрибутива (.exe и установщик):**
-
-   ```bash
-   npm run tauri build
-   ```
-
-   Готовый бинарник будет доступен в `src-tauri/target/release/minibin.exe` или `src-tauri/target/release/bundle/nsis/`.
-
-5. **Сборка промо-сайта на Flutter Web:**
-
-   ```bash
-   cd website
-   flutter build web --release
-   ```
-
-   Файлы лендинга генерируются в `website/build/web/`.
+- **Инсталлятор (`Setup.exe` или `.msi`):** Быстрая установка без прав администратора.
+- **Portable версия (`.zip`):** Запуск в один клик без инсталляции.
 
 ---
 
-## 📄 Лицензия
+## 🇬🇧 About the Project
 
-Этот проект распространяется по лицензии [MIT](LICENSE).
+**MiniBin v2** is an ultra-lightweight, native Windows 10 & 11 utility and part of the **Kobalt Tools** desktop ecosystem ([StashIt](https://github.com/kobaltgit/StashIt), [Undoit](https://github.com/kobaltgit/undoit), [PolyShift](https://github.com/kobaltgit/polyshift), [PeekIt](https://github.com/kobaltgit/peekit)).
 
-*Оригинальная идея утилиты: [King Triton](https://github.com/king-tri-ton). В версии v2 проект полностью переписан на Rust, Tauri и Svelte.*
+It moves Recycle Bin management directly into the Windows system notification area (system tray). Clean up your desktop by hiding the default desktop trash icon, preview deleted files in an interactive acrylic flyout, restore individual items, and empty trash with a single click.
+
+Version **v2.0** is completely overhauled in **Rust 2021** and **Svelte 5** under **Tauri v2**, consuming only **10–18 MB RAM** (5x less than Python) with zero administrator privileges required.
+
+### ⚡ Key Benchmarks
+
+| Metric | MiniBin v2 (Rust + Tauri v2) | MiniBin v1 (Python / PyQt) | Default Windows Recycle Bin |
+| :--- | :--- | :--- | :--- |
+| **Idle RAM** | **10–18 MB** | 60–90 MB | Part of explorer.exe |
+| **UI Type** | **Interactive Flyout (Fluent Acrylic)** | Tray menu only | Bulky full Explorer window |
+| **File Management** | **Preview, live search, selective restore** | Blind empty | Full window only |
+| **Tray Themes** | **4 sets (Fluent, Win98 Retro, Minimal, Classic)** | 2 fixed icons | 1 static icon |
+| **Autorun** | **Clean HKCU (zero UAC prompts)** | ProgramData (Admin needed) | System |
+| **Installer Size** | **~10 MB** | ~60 MB | Built into Windows |
+
+### 🎯 Core Features
+
+- 🪟 **Fluent Glassmorphism Flyout:** Modern tray flyout window with backdrop acrylic blur adapting to Windows dark and light modes.
+- 📊 **Real-time Capacity Dial:** Visual disk meter with warning glow when trash exceeds your limit (5, 10, 20, 50 GB).
+- 🔍 **Deleted Items Explorer:** Interactive file list with instant search by filename, size, and original location.
+- ↩️ **Selective Restore:** Restore any file back to its exact original directory or permanently shred it right from the flyout.
+- 🖱️ **Customizable Mouse Actions:** Map Left Click, Middle Click, and Double Click to toggle flyout, instant clean, or Explorer.
+- 🎨 **4 Icon Themes:** Fluent modern icons, nostalgic Windows 98 retro, sleek monochrome minimal, and classic.
+- 🚀 **Clean User-Mode Startup:** Registry-based autorun in `HKCU` without intrusive UAC popups.
+- 🔊 **Sound & Safety Confirmations:** Optional paper crumple sound effect and accidental clean prevention dialog.
+
+### 📥 Installation & Download
+
+Download the latest version from [GitHub Releases](https://github.com/kobaltgit/minibin/releases/latest):
+
+- **Installer (`Setup.exe` / `.msi`):** User-mode installer with start menu shortcuts.
+- **Portable (`.zip`):** Ready-to-use archive, no installation needed.
+
+---
+
+## 🛠️ Сборка и разработка / Development
+
+```bash
+# 1. Установка зависимостей фронтенда
+npm install
+
+# 2. Запуск в режиме разработки (Hot Reload)
+npm run tauri dev
+
+# 3. Сборка релизного установщика
+npm run tauri build
+```
+
+---
+
+## 🌐 Экосистема Kobalt Tools
+
+| Проект | Описание | Стек | Ссылки |
+| :--- | :--- | :--- | :--- |
+| 📥 **StashIt** | Плавающий карман Drag-and-Drop (Dropover / Yoink для Windows) | Rust + Tauri v2 + Svelte 5 | [Repo](https://github.com/kobaltgit/StashIt) • [Web](https://kobaltgit.github.io/StashIt/) |
+| 🗑️ **MiniBin** | Умная корзина в системном трее с Flyout-интерфейсом | Rust + Tauri v2 + Svelte 5 | [Repo](https://github.com/kobaltgit/minibin) • [Web](https://kobaltgit.github.io/minibin/) |
+| ⏱️ **Undoit** | Локальная машина времени и версионирование файлов (Ctrl+Z) | Rust + Tauri v2 + Svelte 5 | [Repo](https://github.com/kobaltgit/undoit) • [Web](https://kobaltgit.github.io/Undoit/) |
+| 🌐 **PolyShift** | HUD-помощник и контекстный перевод у курсора с Gemini AI | Rust + Tauri v2 + Svelte 5 | [Repo](https://github.com/kobaltgit/polyshift) • [Web](https://kobaltgit.github.io/polyshift/) |
+| 👁️ **PeekIt** | Мгновенный предпросмотр файлов по клавише Space | Rust + Tauri v2 + Svelte 5 | [Repo](https://github.com/kobaltgit/peekit) • [Web](https://kobaltgit.github.io/PeekIt/) |
+| 🧩 **PeekIt Plugins** | Официальный реестр и SDK веб-плагинов для PeekIt | TypeScript + Web SDK | [Repo](https://github.com/kobaltgit/peekit-plugins) • [Web](https://kobaltgit.github.io/peekit-plugins/) |
+| 🎨 **kobalt_ui** | Общая библиотека UI компонентов (шапка, футер, релизы) | Flutter Web (Dart) | [Repo](https://github.com/kobaltgit/kobalt_ui) |
+
+---
+
+## 📄 Лицензия / License
+
+Распространяется под лицензией **MIT**. Подробнее в файле [LICENSE](LICENSE).

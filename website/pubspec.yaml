@@ -38,9 +38,6 @@ dependencies:
       url: https://github.com/kobaltgit/kobalt_ui.git
       ref: main
 
-dependency_overrides:
-  kobalt_ui:
-    path: ../../kobalt_ui
 
 
 dev_dependencies:

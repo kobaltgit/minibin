@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src-tauri/icons/128x128.png" width="96" height="96" alt="MiniBin Logo" />
+  <img src="icons/minibin-full.png" width="96" height="96" alt="MiniBin Logo" />
   <h1 align="center">MiniBin v2</h1>
   <strong>Легковесная корзина в системном трее Windows 10 & 11 на Rust и Tauri v2.</strong><br/>
   <em>Lightweight system tray Recycle Bin companion for Windows 10 & 11 built with Rust & Tauri v2.</em>

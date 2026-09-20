@@ -1,0 +1,229 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640">
+  <defs>
+    <!-- Глубокий градиент фона (Crimson / Slate) -->
+    <radialGradient id="bgGlow" cx="80%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#2a0d17"/>
+      <stop offset="50%" stop-color="#0e0a12"/>
+      <stop offset="100%" stop-color="#060509"/>
+    </radialGradient>
+
+    <!-- Акцентный градиент для MiniBin (Coral -> Rose -> Amber) -->
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb7185"/>
+      <stop offset="50%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+
+    <!-- Градиент кнопки очистки -->
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e11d48"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+
+    <!-- Четкая и яркая обводка карточки (без затухания в ноль) -->
+    <linearGradient id="cardBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb7185" stop-opacity="0.85"/>
+      <stop offset="50%" stop-color="#f43f5e" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#fb923c" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <!-- Маска скругления для правого модуля (все углы идеальны) -->
+    <clipPath id="cardClip">
+      <rect width="470" height="410" rx="16"/>
+    </clipPath>
+
+    <!-- Неоновое свечение элементов -->
+    <filter id="roseGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Фон -->
+  <rect width="1280" height="640" fill="url(#bgGlow)"/>
+
+  <!-- Тонкая фоновая сетка Fluent UI -->
+  <g stroke="#261b2b" stroke-width="1" opacity="0.4">
+    <line x1="80" y1="80" x2="80" y2="560" stroke-dasharray="4,4"/>
+    <line x1="1200" y1="80" x2="1200" y2="560" stroke-dasharray="4,4"/>
+    <line x1="60" y1="100" x2="1220" y2="100"/>
+    <line x1="60" y1="540" x2="1220" y2="540"/>
+  </g>
+
+  <!-- ==================== ПРАВАЯ ЧАСТЬ: МАКЕТ ТРЕЯ И ОКНА ОЧИСТКИ ==================== -->
+  <g transform="translate(700, 95)">
+    <!-- Фоновое свечение окна -->
+    <rect x="-8" y="-8" width="486" height="426" rx="22" fill="#e11d48" opacity="0.12" filter="blur(20px)"/>
+
+    <!-- Содержимое карточки под маской скругления (ничего не вылезает за углы) -->
+    <g clip-path="url(#cardClip)">
+      <!-- Базовый фон карточки -->
+      <rect width="470" height="410" fill="#0d0a14" fill-opacity="0.94"/>
+
+      <!-- Шапка карточки -->
+      <g transform="translate(20, 20)">
+        <!-- Векторная иконка корзины -->
+        <g transform="translate(0, 0) scale(0.9)" stroke="#fb7185" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </g>
+        
+        <text x="30" y="16" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700">
+          Recycle Bin Status
+        </text>
+
+        <!-- Бейдж количества файлов -->
+        <rect x="345" y="0" width="85" height="24" rx="12" fill="#3b0712" stroke="#f43f5e" stroke-width="1"/>
+        <text x="387.5" y="16" text-anchor="middle" fill="#fb7185" font-family="sans-serif" font-size="11" font-weight="700">
+          128 FILES
+        </text>
+      </g>
+
+      <line x1="0" y1="56" x2="470" y2="56" stroke="#1f1524" stroke-width="1"/>
+
+      <!-- Карточка суммарного объёма -->
+      <g transform="translate(20, 76)">
+        <rect width="430" height="88" rx="12" fill="#140f1d" stroke="#2e1b30" stroke-width="1"/>
+        
+        <!-- Круговой индикатор статуса -->
+        <circle cx="48" cy="44" r="26" fill="#260b17" stroke="#f43f5e" stroke-width="2.5"/>
+        <text x="48" y="52" text-anchor="middle" font-size="20">⚠️</text>
+
+        <!-- Текст размера -->
+        <text x="92" y="38" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="800">
+          1.42 GB
+        </text>
+        <text x="92" y="58" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12">
+          Trash size across all logical drives
+        </text>
+      </g>
+
+      <!-- Детализация по дискам (Multi-Drive) -->
+      <g transform="translate(20, 182)">
+        <!-- Диск C -->
+        <text x="0" y="14" fill="#cbd5e1" font-family="monospace" font-size="12" font-weight="600">[C:] System SSD</text>
+        <text x="430" y="14" text-anchor="end" fill="#fb7185" font-family="monospace" font-size="12" font-weight="700">1.10 GB</text>
+        <rect y="22" width="430" height="6" rx="3" fill="#1f1524"/>
+        <rect y="22" width="330" height="6" rx="3" fill="url(#btnGrad)"/>
+
+        <!-- Диск D -->
+        <text x="0" y="52" fill="#cbd5e1" font-family="monospace" font-size="12" font-weight="600">[D:] Storage HDD</text>
+        <text x="430" y="52" text-anchor="end" fill="#fb923c" font-family="monospace" font-size="12" font-weight="700">320 MB</text>
+        <rect y="60" width="430" height="6" rx="3" fill="#1f1524"/>
+        <rect y="60" width="100" height="6" rx="3" fill="#fb923c"/>
+      </g>
+
+      <!-- Главная кнопка быстрой очистки -->
+      <g transform="translate(20, 270)">
+        <rect width="430" height="46" rx="10" fill="url(#btnGrad)" filter="url(#roseGlow)"/>
+        <text x="215" y="28" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" letter-spacing="0.5">
+          ⚡ EMPTY RECYCLE BIN (ONE-CLICK)
+        </text>
+      </g>
+
+      <!-- Симуляция панели задач Windows (Taskbar Tray) внизу карточки -->
+      <g transform="translate(0, 342)">
+        <rect width="470" height="68" fill="#08060d" fill-opacity="0.95"/>
+        <line x1="0" y1="0" x2="470" y2="0" stroke="#1f1524" stroke-width="1"/>
+
+        <!-- Трей-иконки -->
+        <g transform="translate(260, 24)">
+          <text x="0" y="16" fill="#64748b" font-size="14">📶</text>
+          <text x="25" y="16" fill="#64748b" font-size="14">🔊</text>
+
+          <!-- Подсвеченная иконка MiniBin в трее -->
+          <rect x="52" y="-4" width="34" height="30" rx="6" fill="#2d0a16" stroke="#f43f5e" stroke-width="1.2"/>
+          <g transform="translate(61, 2) scale(0.65)" stroke="#fb7185" stroke-width="2" fill="none">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </g>
+
+          <!-- Часы Windows -->
+          <text x="105" y="10" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500">14:20</text>
+          <text x="105" y="24" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10">24.10.2026</text>
+        </g>
+      </g>
+    </g>
+
+    <!-- САМЫЙ ВЕРХНИЙ СЛОЙ: Обводка рамки (не перекрывается содержимым и видна во всех 4 углах) -->
+    <rect x="0.75" y="0.75" width="468.5" height="408.5" rx="16" fill="none" stroke="url(#cardBorder)" stroke-width="1.5"/>
+  </g>
+
+  <!-- ==================== ЛЕВАЯ ЧАСТЬ: ИНФОРМАЦИЯ О ПРОЕКТЕ ==================== -->
+  <g transform="translate(100, 145)">
+    <!-- Верхний бейдж категории -->
+    <g>
+      <rect width="290" height="34" rx="17" fill="#3b0712" fill-opacity="0.6" stroke="#f43f5e" stroke-opacity="0.6"/>
+      <text x="145" y="22" text-anchor="middle" fill="#fb7185" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="700" letter-spacing="1">
+        🗑️ SYSTEM TRAY UTILITY FOR WINDOWS
+      </text>
+    </g>
+
+    <!-- Главный заголовок проекта -->
+    <text x="0" y="98" fill="url(#accentGrad)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="900" letter-spacing="-1.5">
+      MiniBin
+    </text>
+
+    <!-- Описание и слоган -->
+    <text x="0" y="148" fill="#f8fafc" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600">
+      Ultra-lightweight Recycle Bin in your tray
+    </text>
+    <text x="0" y="178" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="400">
+      Fast cleanup, storage monitoring &amp; zero desktop clutter
+    </text>
+
+    <!-- Метрики и фичи (Specs) -->
+    <g transform="translate(0, 222)">
+      <!-- Метрика 1: One-Click -->
+      <g transform="translate(0, 0)">
+        <rect width="145" height="36" rx="8" fill="#140f1d" stroke="#f43f5e" stroke-width="1.2"/>
+        <text x="72.5" y="23" text-anchor="middle" fill="#fb7185" font-family="sans-serif" font-size="13" font-weight="700">
+          ⚡ One-Click Purge
+        </text>
+      </g>
+
+      <!-- Метрика 2: Multi-Drive -->
+      <g transform="translate(155, 0)">
+        <rect width="145" height="36" rx="8" fill="#140f1d" stroke="#fb923c" stroke-width="1.2"/>
+        <text x="72.5" y="23" text-anchor="middle" fill="#fb923c" font-family="sans-serif" font-size="13" font-weight="700">
+          Multi-Drive Clean
+        </text>
+      </g>
+
+      <!-- Метрика 3: Zero Clutter -->
+      <g transform="translate(310, 0)">
+        <rect width="140" height="36" rx="8" fill="#140f1d" stroke="#334155" stroke-width="1.2"/>
+        <text x="70" y="23" text-anchor="middle" fill="#f1f5f9" font-family="sans-serif" font-size="13" font-weight="600">
+          Zero Clutter
+        </text>
+      </g>
+    </g>
+
+    <!-- Стек технологий (Tech tags) -->
+    <g transform="translate(0, 278)">
+      <!-- Rust -->
+      <g transform="translate(0, 0)">
+        <rect width="85" height="32" rx="8" fill="#0d0a14" stroke="#3a2238"/>
+        <text x="42.5" y="21" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="13" font-weight="500">Rust</text>
+      </g>
+
+      <!-- Tauri v2 -->
+      <g transform="translate(95, 0)">
+        <rect width="105" height="32" rx="8" fill="#0d0a14" stroke="#3a2238"/>
+        <text x="52.5" y="21" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="13" font-weight="500">Tauri v2</text>
+      </g>
+
+      <!-- Win 10/11 -->
+      <g transform="translate(210, 0)">
+        <rect width="115" height="32" rx="8" fill="#0d0a14" stroke="#3a2238"/>
+        <text x="57.5" y="21" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="13" font-weight="500">Win 10/11</text>
+      </g>
+
+      <!-- Custom Icons -->
+      <g transform="translate(335, 0)">
+        <rect width="115" height="32" rx="8" fill="#0d0a14" stroke="#3a2238"/>
+        <text x="57.5" y="21" text-anchor="middle" fill="#94a3b8" font-family="sans-serif" font-size="13" font-weight="500">Custom Icons</text>
+      </g>
+    </g>
+  </g>
+</svg>

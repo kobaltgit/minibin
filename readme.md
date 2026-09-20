@@ -1,3 +1,5 @@
+![Minibin Banner](./banner.svg)
+
 <p align="center">
   <img src="icons/minibin-full.png" width="96" height="96" alt="MiniBin Logo" />
   <h1 align="center">MiniBin v2</h1>

@@ -32,12 +32,26 @@ jobs:
       - name: Build Tauri App
         run: npm run tauri build
 
+      - name: Extract App Version
+        id: app_version
+        shell: pwsh
+        run: |
+          $pkg = Get-Content package.json -Raw | ConvertFrom-Json
+          $ver = if ($env:GITHUB_REF_NAME -match '^v?([0-9]+\.[0-9]+.*)$') { $Matches[1] } else { $pkg.version }
+          $tag = "v$ver"
+          "version=$ver" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          Write-Host "Target Version: $ver, Tag: $tag"
+
       - name: Package Release Assets
         shell: pwsh
         run: |
-          $ver = if ($env:GITHUB_REF_NAME -match '^v?(.+)$') { $Matches[1] } else { '2.0.1' }
+          $ver = "${{ steps.app_version.outputs.version }}"
           New-Item -ItemType Directory -Force -Path release_assets
           Copy-Item src-tauri/target/release/bundle/nsis/*.exe "release_assets/MiniBin_${ver}_Setup.exe"
+          if (Test-Path src-tauri/target/release/bundle/msi/*.msi) {
+            Copy-Item src-tauri/target/release/bundle/msi/*.msi "release_assets/MiniBin_${ver}_Setup.msi"
+          }
           Copy-Item src-tauri/target/release/minibin.exe release_assets/MiniBin.exe
           Set-Content -Path release_assets/portable.txt -Value "Этот файл переводит MiniBin в портабельный режим. Настройки и кастомные иконки сохраняются в этой же папке."
           Compress-Archive -Path release_assets/MiniBin.exe, release_assets/portable.txt -DestinationPath "release_assets/MiniBin_${ver}_Portable.zip"
@@ -51,11 +65,12 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v2.0.1' }}
-          name: MiniBin ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'v2.0.1' }}
+          tag_name: ${{ steps.app_version.outputs.tag }}
+          name: MiniBin ${{ steps.app_version.outputs.tag }}
           body_path: RELEASE_NOTES.md
           files: |
             release_assets/MiniBin_*_Setup.exe
+            release_assets/MiniBin_*_Setup.msi
             release_assets/MiniBin_*_Portable.zip
             release_assets/MiniBin.exe
           draft: false

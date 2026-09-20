@@ -768,7 +768,7 @@
             <div class="about-title-block">
               <div class="about-name-row">
                 <span class="about-name">MiniBin</span>
-                <span class="version-badge">v2.0.1</span>
+                <span class="version-badge">v2.0.2</span>
               </div>
               <span class="about-tagline">{t.about_desc}</span>
             </div>

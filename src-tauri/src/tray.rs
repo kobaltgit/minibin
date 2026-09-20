@@ -14,6 +14,9 @@ static IS_UPDATING: AtomicBool = AtomicBool::new(false);
 #[cfg(target_os = "windows")]
 pub fn position_flyout(window: &WebviewWindow) {
     use windows_sys::Win32::Foundation::{POINT, RECT};
+    use windows_sys::Win32::Graphics::Gdi::{
+        GetMonitorInfoW, MonitorFromPoint, MONITORINFO, MONITOR_DEFAULTTONEAREST,
+    };
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         GetCursorPos, SystemParametersInfoW, SPI_GETWORKAREA,
     };
@@ -23,40 +26,131 @@ pub fn position_flyout(window: &WebviewWindow) {
         GetCursorPos(&mut cursor);
     }
 
-    let mut work_area = RECT {
-        left: 0,
-        top: 0,
-        right: 1920,
-        bottom: 1040,
-    };
-    unsafe {
-        SystemParametersInfoW(
-            SPI_GETWORKAREA,
-            0,
-            &mut work_area as *mut _ as *mut std::ffi::c_void,
-            0,
-        );
-    }
+    // Try to find the monitor containing the cursor via Tauri API first
+    let monitor = window
+        .available_monitors()
+        .ok()
+        .and_then(|monitors| {
+            monitors.into_iter().find(|m| {
+                let pos = m.position();
+                let size = m.size();
+                cursor.x >= pos.x
+                    && cursor.x < pos.x + size.width as i32
+                    && cursor.y >= pos.y
+                    && cursor.y < pos.y + size.height as i32
+            })
+        })
+        .or_else(|| window.current_monitor().ok().flatten())
+        .or_else(|| window.primary_monitor().ok().flatten());
 
-    let win_w = 380;
-    let win_h = 520;
+    let (scale, wa_left, wa_top, wa_right, wa_bottom, mon_top, mon_bottom) = if let Some(m) = monitor {
+        let scale = m.scale_factor();
+        let wa = m.work_area();
+        let pos = m.position();
+        let size = m.size();
+        (
+            scale,
+            wa.position.x,
+            wa.position.y,
+            wa.position.x + wa.size.width as i32,
+            wa.position.y + wa.size.height as i32,
+            pos.y,
+            pos.y + size.height as i32,
+        )
+    } else {
+        // Fallback to Win32 API MonitorFromPoint
+        let h_monitor = unsafe { MonitorFromPoint(cursor, MONITOR_DEFAULTTONEAREST) };
+        let mut mi = MONITORINFO {
+            cbSize: std::mem::size_of::<MONITORINFO>() as u32,
+            rcMonitor: RECT { left: 0, top: 0, right: 0, bottom: 0 },
+            rcWork: RECT { left: 0, top: 0, right: 0, bottom: 0 },
+            dwFlags: 0,
+        };
+
+        if unsafe { GetMonitorInfoW(h_monitor, &mut mi) } != 0 {
+            let scale = window.scale_factor().unwrap_or(1.0);
+            (
+                scale,
+                mi.rcWork.left,
+                mi.rcWork.top,
+                mi.rcWork.right,
+                mi.rcWork.bottom,
+                mi.rcMonitor.top,
+                mi.rcMonitor.bottom,
+            )
+        } else {
+            let mut work_area = RECT {
+                left: 0,
+                top: 0,
+                right: 1920,
+                bottom: 1040,
+            };
+            unsafe {
+                SystemParametersInfoW(
+                    SPI_GETWORKAREA,
+                    0,
+                    &mut work_area as *mut _ as *mut std::ffi::c_void,
+                    0,
+                );
+            }
+            let scale = window.scale_factor().unwrap_or(1.0);
+            (
+                scale,
+                work_area.left,
+                work_area.top,
+                work_area.right,
+                work_area.bottom,
+                work_area.top,
+                work_area.bottom,
+            )
+        }
+    };
+
+    const LOGICAL_WIDTH: f64 = 380.0;
+    const LOGICAL_HEIGHT: f64 = 520.0;
+
+    let win_w = (LOGICAL_WIDTH * scale).round() as i32;
+    let win_h = (LOGICAL_HEIGHT * scale).round() as i32;
+    let margin = (12.0 * scale).round() as i32;
 
     // Position window around cursor / tray area, clamped inside work_area
     let mut x = cursor.x - (win_w / 2);
-    let mut y = work_area.bottom - win_h - 12;
+    let mut y = wa_bottom - win_h - margin;
 
-    if x + win_w > work_area.right - 10 {
-        x = work_area.right - win_w - 10;
-    }
-    if x < work_area.left + 10 {
-        x = work_area.left + 10;
+    // Detect if taskbar is at top:
+    // 1. Work area top is below monitor top (taskbar is docked at top)
+    // 2. Or auto-hide / full-height where cursor is in the top half
+    let is_top_taskbar = if wa_top > mon_top {
+        true
+    } else if wa_bottom < mon_bottom {
+        false
+    } else {
+        cursor.y < mon_top + ((mon_bottom - mon_top) / 2)
+    };
+
+    if is_top_taskbar {
+        y = wa_top + margin;
     }
 
-    if cursor.y < work_area.bottom / 2 {
-        // Taskbar is at top
-        y = work_area.top + 12;
+    // Clamp inside work area
+    if x + win_w > wa_right - margin {
+        x = wa_right - win_w - margin;
+    }
+    if x < wa_left + margin {
+        x = wa_left + margin;
     }
 
+    if y + win_h > wa_bottom - margin {
+        y = wa_bottom - win_h - margin;
+    }
+    if y < wa_top + margin {
+        y = wa_top + margin;
+    }
+
+    let _ = window.set_size(tauri::Size::Logical(tauri::LogicalSize {
+        width: LOGICAL_WIDTH,
+        height: LOGICAL_HEIGHT,
+    }));
     let _ = window.set_position(tauri::Position::Physical(tauri::PhysicalPosition { x, y }));
 }
 

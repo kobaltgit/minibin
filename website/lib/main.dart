@@ -94,7 +94,7 @@ class _LandingPageState extends State<LandingPage> {
               // Sticky Navigation Bar
               KobaltNavBar(
                 project: KobaltProjectId.miniBin,
-                version: 'v2.0.1',
+                version: 'v2.0.2',
                 isRussian: currentLang.value == AppLang.ru,
                 onLanguageToggle: () {
                   setAppLanguage(currentLang.value == AppLang.ru ? AppLang.en : AppLang.ru);
@@ -152,7 +152,7 @@ class _LandingPageState extends State<LandingPage> {
                       ),
                       KobaltFooter(
                         project: KobaltProjectId.miniBin,
-                        version: 'v2.0.1',
+                        version: 'v2.0.2',
                         isRussian: currentLang.value == AppLang.ru,
                         accentColor: AppColors.primary,
                         onBackToTop: () {
